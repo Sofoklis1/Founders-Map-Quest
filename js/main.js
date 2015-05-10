@@ -1,0 +1,599 @@
+/**
+ * Created by sofos on 5/8/2015.
+ */
+
+var delimiters = { "1" : ",", "2" : ";", "3" : "\t"  };
+var image_extensions = [ ".jpg", ".png", ".jpeg", ".gif", ".svg" ]; //add more image extensions here
+var thumbnail_width = 50;
+//var thumbnail_height = 50;
+
+var data_headers = [];
+var data_values = [];
+var markers = [];
+var markers_in_map = [];
+
+
+$(document).ready(function() {
+
+    $('#submitdata').click(function(event) {
+
+        var delimeter_choise = $('#datadelimiterchoise').val();
+        var datacsv = $('#importdatafield').val();
+        var count_errors = 0;
+
+        if(delimeter_choise == 0) {
+            $('#datadelimiterchoise').addClass('highlightred');
+            count_errors++;
+        } else {
+            $('#datadelimiterchoise').removeClass('highlightred');
+        }
+
+        if(datacsv.length == 0) {
+            $('#importdatafield').addClass('highlightred');
+            count_errors++;
+        } else {
+            $('#importdatafield').removeClass('highlightred');
+        }
+
+        if(count_errors > 0) {
+            return;
+        }
+
+        $('#datapreview').html('');//clear preview area
+        $('#marker_settings_panel').html(''); //clear marker settings area
+        data_headers = []; //clear headers
+        data_values = []; //clear data
+
+        var all_lines = $('textarea').val().split('\n');
+
+        var preview = document.createDocumentFragment();
+
+        var preview_table = document.createElement( "table" );
+        preview_table.setAttribute("class", "table table-bordered table-responsive table-striped table-hover table-responsive");
+        preview_table.setAttribute("id", "previewtable");
+
+        var table_head = document.createElement( "thead" );
+        var table_body = document.createElement( "tbody" );
+        //var table_footer = document.createElement( "tfoot" );
+
+        $.each( all_lines, function( i, line ) {
+
+            var columns = line.split(delimiters[delimeter_choise]);
+            var table_row = document.createElement( "tr" );
+            //var header_row = document.createElement( "tr" );
+            var img, link;
+
+            if(i == 0) {
+                data_headers = columns;
+            } else {
+                data_values.push(columns);//no headers only data
+            }
+
+            $.each( columns, function( j, column ) {
+
+                if(i == 0) { //header - first line
+
+                    var header_col = document.createElement( "th" );
+                    header_col.innerHTML = column;
+                    //header_row.appendChild(header_col);
+                    table_row.appendChild(header_col);
+                    //data_headers.push(column);
+
+                } else {
+                    var simple_col = document.createElement( "td" );
+
+                    if(ValidURL(column)) {
+                    //if((/^http:/).test(column)) {
+
+                        var isColImage = false;
+
+
+                        if(isImage(column)) {
+                            isColImage = true;
+                            img = document.createElement( "img" );
+                            img.setAttribute("src", column);
+                            img.setAttribute("alt", "image display"); //mandatory attribute for images
+                            img.setAttribute("width", thumbnail_width + "px;"); //restrict images width
+                            //img.setAttribute("height", thumbnail_height + "px;"); //restrict images height
+                            img.setAttribute("class", "customthumbnail"); //restrict images width
+
+                            simple_col.appendChild(img);
+                        }
+
+                        /*
+                        $.each( image_extensions, function( k, item ) {
+
+                            var test_selector = item + '$';
+                            var pattern = new RegExp(test_selector);
+
+                            if((pattern).test(column)) {
+                                isImage = true;
+                                img = document.createElement( "img" );
+                                img.setAttribute("src", column);
+                                img.setAttribute("alt", "image display"); //mandatory attribute for images
+                                img.setAttribute("width", thumbnail_width + "px;"); //restrict images width
+                                //img.setAttribute("height", thumbnail_height + "px;"); //restrict images height
+                                img.setAttribute("class", "customthumbnail"); //restrict images width
+
+                                simple_col.appendChild(img);
+                            }
+
+                        });
+                        */
+
+                        if(!isColImage) { //it's a link
+                            link = document.createElement( "a" );
+                            link.setAttribute("href", column);
+                            link.setAttribute("title", "click to view page");
+                            link.setAttribute("target", "_blank"); //open in new window
+                            link.innerHTML = "URL";
+                            simple_col.appendChild(link);
+                        }
+
+                    } else {
+                        simple_col.innerHTML = column;
+                    }
+
+                    table_row.appendChild(simple_col);
+                    if(j == 0) {
+                        table_row.setAttribute("id", "dataid-" + column); //add data id in id of every tr
+                    }
+
+
+                    //rest_col_obj = {};
+                    //rest_col_obj.linenum = i; //start for i = 1
+                    //rest_col_obj.colnum = j+1; //start from 1
+                    //rest_col_obj.value = column;
+
+                    //data_values.push( rest_col_obj );
+
+                }
+
+
+            });
+
+            if(i == 0) {
+                table_head.appendChild(table_row);
+                //table_footer.appendChild(table_row.cloneNode(true));
+            } else {
+                table_body.appendChild(table_row);
+            }
+
+            //preview_table.appendChild(table_row);
+
+        });
+
+        preview_table.appendChild(table_head);
+
+        //preview_table.appendChild(table_footer);
+
+
+        preview_table.appendChild(table_body);
+
+        if(data_headers.length < 2) {
+            $('#datapreview').append('<div class="alert alert-danger" role="alert">ERROR: Wrong delimiter or not a CSV format! Please consult our <strong><a href="help.html">help</a></strong> section.</div>');
+            $('#markersettingsubmit').attr("disabled", "disabled");
+            $('#datapreview').append(preview_table);
+            $('#csvdatapanel').modal('show');
+            return;
+        }
+
+        $('#markersettingsubmit').removeAttr("disabled");
+
+        $('#datapreview').append(preview_table);
+
+        var select_marker_lon = document.createElement( "select" );
+        select_marker_lon.setAttribute("id", "marker_lon_choise");
+
+        var select_marker_lat = document.createElement( "select" );
+        select_marker_lat.setAttribute("id", "marker_lat_choise");
+
+        var select_marker_details = document.createElement( "select" );
+        select_marker_details.setAttribute("id", "marker_details_choise");
+
+        var select_marker_label = document.createElement( "select" );
+        select_marker_label.setAttribute("id", "marker_label_choise");
+
+        $.each( data_headers, function( i, field ) {
+
+            var select_option = document.createElement( "option" );
+
+            if(i == 0) {
+                var select_option_null = document.createElement( "option" );
+                select_option_null.setAttribute("value", 0);
+                //select_option_null.setAttribute("selected", "selected");
+                select_option_null.innerHTML = "-- select column --";
+
+                select_marker_lon.appendChild(select_option_null);
+                select_marker_lat.appendChild(select_option_null.cloneNode(true));
+                select_marker_details.appendChild(select_option_null.cloneNode(true));
+                select_marker_label.appendChild(select_option_null.cloneNode(true));
+            }
+
+            select_option.setAttribute("value", i + 1); //starting from 1 -> collumn 1 etc
+            select_option.innerHTML = field;
+
+            var lat_opt = select_option.cloneNode(true);
+            var detail_opt = select_option.cloneNode(true);
+            var label_opt = select_option.cloneNode(true);
+
+            if(i == 1) { //label column
+                label_opt.setAttribute("selected", "selected");
+            }
+
+            if(i == 6) { //marker details column
+                detail_opt.setAttribute("selected", "selected");
+            }
+
+            if(i == 9) {//latitude column
+                lat_opt.setAttribute("selected", "selected");
+            }
+
+            if(i == 10) { //longitute column
+                select_option.setAttribute("selected", "selected");
+            }
+
+            select_marker_lon.appendChild(select_option);
+            select_marker_lat.appendChild(lat_opt);
+            select_marker_details.appendChild(detail_opt);
+            select_marker_label.appendChild(label_opt);
+
+            //select_marker_lon.appendChild(select_option);
+            //select_marker_lat.appendChild(select_option.cloneNode(true));
+            //select_marker_details.appendChild(select_option.cloneNode(true));
+            //select_marker_label.appendChild(select_option.cloneNode(true));
+
+        });//end each
+
+        $('#marker_settings_panel').append('<form><fieldset id="marker_settings"><legend>Marker Settings</legend></fieldset></form>');
+
+        $('#marker_settings').append('<div id="marker_lat"><label for="marker_lat_choise">Latitude: </label><br> </div>');
+        $('#marker_lat').append(select_marker_lat);
+
+        $('#marker_settings').append('<div id="marker_lon"><label for="marker_lon_choise">Longitude: </label><br> </div>');
+        $('#marker_lon').append(select_marker_lon);
+
+        $('#marker_settings').append('<div id="marker_details"><label for="marker_details_choise">Point details: </label><br> </div>');
+        $('#marker_details').append(select_marker_details);
+
+        $('#marker_settings').append('<div id="marker_labels"><label for="marker_label_choise">Marker label: </label><br> </div>');
+        $('#marker_labels').append(select_marker_label);
+
+        $('#csvdatapanel').modal('show'); //show data preview modal
+
+
+        //finish button pressed
+        $('#markersettingsubmit').click(function(event) {
+
+            var longitude_col = $('#marker_lon_choise').val();
+            var latitude_col = $('#marker_lat_choise').val();
+            var marker_details_col = $('#marker_details_choise').val();
+            var marker_label_col = $('#marker_label_choise').val();
+
+            var count_incomplete = 0;
+
+            if(longitude_col == 0) {
+                $('#marker_lon_choise').addClass('highlightred');
+                count_incomplete++;
+            } else {
+                $('#marker_lon_choise').removeClass('highlightred');
+            }
+
+            if(latitude_col == 0) {
+                $('#marker_lat_choise').addClass('highlightred');
+                count_incomplete++;
+            } else {
+                $('#marker_lat_choise').removeClass('highlightred');
+            }
+
+            if(marker_details_col == 0) {
+                $('#marker_details_choise').addClass('highlightred');
+                count_incomplete++;
+            } else {
+                $('#marker_details_choise').removeClass('highlightred');
+            }
+
+            if(marker_label_col == 0) {
+                $('#marker_label_choise').addClass('highlightred');
+                count_incomplete++;
+            } else {
+                $('#marker_label_choise').removeClass('highlightred');
+            }
+
+            if(count_incomplete > 0) {
+                return;
+            }
+
+
+
+
+
+
+            var table_area = preview_table.cloneNode(true);
+
+            $('#csvdatapanel').modal('hide');
+            $('#importdataform').hide();
+
+            $('#datapreview').html(''); //clear modal table
+
+            $('#table_data_area').html(table_area);
+
+            //var extra_header_col = document.createElement( "th" );
+            //extra_header_col.innerHTML = 'Hide';
+            //$('#previewtable thead tr').appendChild(extra_header_col);
+
+            var hrow = document.querySelectorAll("#previewtable thead tr")[0]; //has only one header row
+            var extra_header_col = document.createElement( "th" );
+            extra_header_col.setAttribute("style", "padding: 10px;"); //make size smaller (be rosponsive as possible)
+            extra_header_col.innerHTML = 'Hide';
+
+            hrow.appendChild(extra_header_col);
+
+            //$('#previewtable thead tr').append('<th style="padding: 10px;">Hide</th>');
+
+            $('#previewtable tbody tr').each(function (index, element) {
+
+                var data_row_id = $(element).attr('id').split('-')[1];
+
+                var extra_col = document.createElement( "td" );
+                extra_col.setAttribute("style", "padding: 10px;");
+
+                var input_checkbox = document.createElement( "button" );
+                input_checkbox.setAttribute("type", "button");
+                input_checkbox.setAttribute("class", "btn btn-primary btn-xs");
+                input_checkbox.setAttribute("data-toggle", "button");
+                input_checkbox.setAttribute("aria-pressed", "false");
+                input_checkbox.setAttribute("autocomplete", "false");
+                input_checkbox.setAttribute("id", "hide-" + data_row_id);
+                //input_checkbox.setAttribute("value", data_row_id);
+                input_checkbox.setAttribute("title", "Hide from map");
+
+                var input_icon = document.createElement( "span" );
+                input_icon.setAttribute("class", "glyphicon glyphicon-eye-open");
+                input_checkbox.appendChild(input_icon);
+
+/*
+                var input_checkbox = document.createElement( "input" );
+                input_checkbox.setAttribute("type", "checkbox");
+                input_checkbox.setAttribute("id", "hide-" + data_row_id);
+                input_checkbox.setAttribute("value", data_row_id);
+                input_checkbox.setAttribute("title", "Hide from map");
+*/
+                extra_col.appendChild(input_checkbox);
+
+                element.appendChild(extra_col);
+            });
+
+
+
+
+
+/*
+            $('#previewtable').DataTable();
+*/
+
+            $('#previewtable').DataTable( {
+                "aoColumns": [ null, null, null, null, null, null, null, null, null, null, null, { "bSortable": false }  ]
+            } );
+
+            //add friendly placeholder to search input
+            $('#previewtable_filter input[type="search"]').attr("placeholder", "Search table");
+
+
+            //prepare markers
+            $.each( data_values, function( i, ln ) {
+                //console.log('line=' + field.linenum + ',column=' + field.colnum + ', value: ' + field.value);
+                var marker_obj = {};
+
+                $.each( ln, function( j, field ) {
+                    //console.log('line=' + ( i + 1) + ',column=' + ( j + 1 ) + ', value: ' + field);
+                    if(j == 0) {
+                        marker_obj.id = field;
+                        //console.log('ok->' + field);
+                    }
+                    if(j == latitude_col - 1) {
+                        marker_obj.lat = field;
+                    }
+                    if(j == longitude_col - 1) {
+                        marker_obj.lon = field;
+                    }
+                    if(j == marker_details_col - 1) {
+                        marker_obj.detail = field;
+                    }
+                    if(j == marker_label_col - 1) {
+                        marker_obj.label = field;
+                    }
+
+                });
+
+                markers.push(marker_obj);
+
+            });
+
+            drawMap(markers);
+
+            $('button[id^="hide-"]').click(function(event) {
+                var element = $(this);
+                var mid = $(this).attr('id').split('-')[1];
+                console.log(mid);
+                //markers_in_map
+                $.each( markers_in_map, function( i, marker ) {
+                    if(marker.cid === mid) {
+                        console.log('get in');
+
+                        if($(element).attr('aria-pressed') == 'false') {
+                            marker.setVisible(false);
+                            $(element).children('span').removeClass('glyphicon-eye-open');
+                            $(element).children('span').addClass('glyphicon-eye-close');
+                            $(element).removeClass('btn-primary');
+                            $(element).addClass('btn-danger');
+                            $(element).attr("title", "Show in map");
+
+                        } else {
+                            marker.setVisible(true);
+                            $(element).children('span').removeClass('glyphicon-eye-close');
+                            $(element).children('span').addClass('glyphicon-eye-open');
+                            $(element).removeClass('btn-danger');
+                            $(element).addClass('btn-primary');
+                            $(element).attr("title", "Hide from map");
+                        }
+
+                    }
+                });
+
+            });
+
+/*
+            $('input[id*="hide-"]').click(function(event) {
+                var element = $(this);
+                var mid = $(this).attr('id').split('-')[1];
+                console.log(mid);
+                //markers_in_map
+                $.each( markers_in_map, function( i, marker ) {
+                    if(marker.cid === mid) {
+                        console.log('get in');
+
+                        if($(element).is(':checked')) {
+                            marker.setVisible(false);
+
+                        } else {
+                            marker.setVisible(true);
+                        }
+
+                    }
+                });
+
+            });
+*/
+
+
+        }); ////end finish button pressed
+
+
+    });
+
+
+
+});
+
+function drawMap(markers_arr) {
+
+    //check if valid latiture and longitute before draw map
+    for (i = 0; i < markers_arr.length; i++) {
+        if( isNaN(markers_arr[i].lat) || isNaN(markers_arr[i].lon) || markers_arr[i].lon < -180 || markers_arr[i].lon  > 180 || markers_arr[i].lat < -180 || markers_arr[i].lat  > 180 ) {
+            $('#message_panel').html('<div class="alert alert-danger" role="alert">ERROR: Found invalid coordinates! Please consult our <strong><a href="help.html">help</a></strong> section.</div>');
+            $('#message_panel').attr("style", "display: block");
+            return;
+        }
+    }//end for
+
+    $('#map_wrapper').attr("style", "display: block;");
+    $('#mappage-canvas').attr("style", "display: block;");
+
+
+    var latLng = new google.maps.LatLng(markers_arr[0].lat, markers_arr[0].lon);
+
+
+    var map = new google.maps.Map(document.getElementById('mappage-canvas'), {
+        zoom: 12,
+        center: latLng,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+
+    var infowindow = new google.maps.InfoWindow;
+
+    var marker, i;
+
+    for (i = 0; i < markers_arr.length; i++) {
+
+        if( ValidURL(markers_arr[i].detail) && isImage(markers_arr[i].detail)) {
+            markers_arr[i].detail = '<img src="' + markers_arr[i].detail +  '" alt="" style="width: 50px;">';
+        }
+
+        if( ValidURL(markers_arr[i].label)) {
+
+            if(isImage(markers_arr[i].label)) {
+                markers_arr[i].label= '<img src="' + markers_arr[i].label +  '" alt="" style="width: 50px;">';
+            } else {
+                markers_arr[i].label = '<a href="' + markers_arr[i].label +  '" style="position: relative; display: block; z-index: 999;">view</a>';
+            }
+
+            //markers_arr[i].detail = '<img src="' + markers_arr[i].detail +  '" alt="" style="width: 50px;">';
+        }
+
+
+/*
+        marker = new google.maps.Marker({
+            position: new google.maps.LatLng(markers_arr[i].lat, markers_arr[i].lon),
+            map: map
+        });
+*/
+        var homeLatLng = new google.maps.LatLng(markers_arr[i].lat, markers_arr[i].lon);
+
+        var marker = new MarkerWithLabel({
+            position: homeLatLng,
+            draggable: false,
+            map: map,
+            labelContent: markers_arr[i].label,
+            labelAnchor: new google.maps.Point(22, 0),
+            labelClass: "markerlabel", // the CSS class for the label
+            labelStyle: {opacity: 1}
+        });
+
+        marker.cid = markers_arr[i].id;
+       // markers_in_map.set("id", markers_arr[i].id);
+
+        google.maps.event.addListener(marker, 'click', (function(marker, i) {
+            return function() {
+                infowindow.setContent(markers[i].detail);
+                infowindow.open(map, marker);
+            }
+        })(marker, i));
+
+        markers_in_map.push(marker);
+    }
+
+    var bounds = new google.maps.LatLngBounds ();
+
+    for (i = 0; i < markers_arr.length; i++) {
+
+        tmp_lating = new google.maps.LatLng (markers_arr[i].lat,markers_arr[i].lon);
+        bounds.extend (tmp_lating);
+    }
+
+
+    map.fitBounds (bounds);
+
+
+} //End of drawMap
+
+
+
+function ValidURL(str) {
+    var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+        '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+        '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+    if(!pattern.test(str)) {
+        return false;
+    } else {
+        return true;
+    }
+} //end of ValidURL
+
+function isImage(str) {
+
+    for (var i = 0; i < image_extensions.length; i++) {
+
+        var test_selector = image_extensions[i] + '$';
+        var pattern = new RegExp(test_selector);
+
+        if((pattern).test(str)) {
+            return true;
+        }
+    }
+
+    return false;
+} //end of isImage

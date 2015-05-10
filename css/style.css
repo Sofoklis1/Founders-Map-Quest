@@ -1,0 +1,234 @@
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+    position: relative;
+    min-height: 100%;
+}
+body {
+    /* Margin bottom by footer height */
+    margin-bottom: 60px;
+}
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 60px;
+    background-color: #222;
+}
+
+
+/* Custom page CSS
+-------------------------------------------------- */
+
+body > .container {
+    padding: 60px 15px 0;
+}
+.container .text-muted {
+    margin: 20px 0;
+}
+
+.footer > .container {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+code {
+    font-size: 80%;
+}
+
+.infotxt {
+    font-size: 16px;
+}
+
+.infotxt code {
+    font-weight: bold;
+    font-size: 100%;
+}
+
+#datadelimiterchoise {
+    padding: 2px 4px;
+    height: 30px;
+}
+
+.highlightred {
+    outline: 1px solid #d02121;
+}
+
+#importdataform h2 {
+    margin: 20px 0;
+}
+
+#importdataform button:focus {
+    outline: none;
+}
+
+#importdataform select {
+    height: 32px;
+    padding: 4px
+}
+
+#importdataform label {
+    font-size: 16px;
+}
+
+#csvdatapanel .modal-header {
+    background-color: #337ab7;
+    color: #fff;
+}
+#csvdatapanel .modal-header h4 {
+    font-weight: bold;
+    text-align: center;
+}
+
+#csvdatapanel .close {
+    color: #fff;
+    opacity: 0.8;
+}
+
+
+#datapreview {
+    overflow: auto;
+    font-size: 14px;
+    max-height: 500px;
+}
+
+#previewtable {
+    margin-bottom: 10px;
+}
+
+#previewtable th {
+    /*white-space:nowrap;*/
+    text-align: center;
+    /*min-width: 30px;*/
+    vertical-align: middle;
+
+}
+
+#previewtable td {
+    padding: 5px;
+    font-size: 12px;
+    vertical-align: middle;
+    text-align: center;
+    /*word-wrap: break-word;*/
+}
+
+#previewtable, #previewtable tr, #previewtable td, #previewtable th {
+    border: 1px solid #ddd;
+}
+/*
+#previewtable tfoot tr, #previewtable tfoot td, #previewtable tfoot th {
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+
+}
+*/
+@media (max-width: 1023px) {
+    #previewtable_wrapper {
+        overflow: auto;
+        padding-bottom: 10px;
+    }
+}
+
+
+
+#previewtable input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.customthumbnail {
+    max-width: 50px;
+    max-height: 50px;
+}
+#marker_settings {
+    border: 2px solid silver;
+    margin: 0 2px;
+    padding: 0.35em 0.625em 0.75em;
+    background-color: #f5f5f5;
+    font-size: 16px;
+    text-align: center;
+}
+
+#marker_settings legend {
+    border: none;
+    width: auto;
+    margin: 0;
+    padding: 2px 4px;
+    font-weight: bold;
+
+}
+
+#marker_lon, #marker_lat, #marker_details, #marker_labels {
+    padding: 10px;
+    display: inline-block;
+    text-align: left;
+    /*margin-right: 10px;*/
+}
+
+#marker_lon_choise, #marker_lat_choise, #marker_details_choise, #marker_label_choise {
+    height: 32px;
+    padding: 4px;
+}
+
+#table_data_area {
+    margin-bottom: 20px;
+}
+
+#map_wrapper {
+    width: 100%;
+    height: 500px;
+    display: none;
+    margin: 10px 0 30px;
+}
+
+#mappage-canvas {
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+.markerlabel {
+    background-color: #fff;
+    color: #d02121;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 5px;
+}
+
+#message_panel {
+    text-align: center;
+    margin: 10px 0;
+    display: none;
+}
+
+#previewtable_length select {
+    height: 25px;
+    padding: 4px;
+}
+
+#previewtable_filter input {
+    height: 25px;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+@media (max-width: 654px) {
+    #previewtable_length, #previewtable_filter {
+        text-align: left;
+    }
+}
+
+#previewtable button[id^="hide-"]:focus, #previewtable button[id^="hide-"]:active {
+    outline: none;
+}
+
+/* Help page */
+.bigletters {
+    font-size: 18px;
+}
+.notes li {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+/* end Help Page */
