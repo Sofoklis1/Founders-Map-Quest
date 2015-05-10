@@ -75,18 +75,14 @@ $(document).ready(function() {
 
                     var header_col = document.createElement( "th" );
                     header_col.innerHTML = column;
-                    //header_row.appendChild(header_col);
                     table_row.appendChild(header_col);
-                    //data_headers.push(column);
 
                 } else {
                     var simple_col = document.createElement( "td" );
 
                     if(ValidURL(column)) {
-                    //if((/^http:/).test(column)) {
 
                         var isColImage = false;
-
 
                         if(isImage(column)) {
                             isColImage = true;
@@ -99,27 +95,6 @@ $(document).ready(function() {
 
                             simple_col.appendChild(img);
                         }
-
-                        /*
-                        $.each( image_extensions, function( k, item ) {
-
-                            var test_selector = item + '$';
-                            var pattern = new RegExp(test_selector);
-
-                            if((pattern).test(column)) {
-                                isImage = true;
-                                img = document.createElement( "img" );
-                                img.setAttribute("src", column);
-                                img.setAttribute("alt", "image display"); //mandatory attribute for images
-                                img.setAttribute("width", thumbnail_width + "px;"); //restrict images width
-                                //img.setAttribute("height", thumbnail_height + "px;"); //restrict images height
-                                img.setAttribute("class", "customthumbnail"); //restrict images width
-
-                                simple_col.appendChild(img);
-                            }
-
-                        });
-                        */
 
                         if(!isColImage) { //it's a link
                             link = document.createElement( "a" );
@@ -139,34 +114,19 @@ $(document).ready(function() {
                         table_row.setAttribute("id", "dataid-" + column); //add data id in id of every tr
                     }
 
+                }//end of else
 
-                    //rest_col_obj = {};
-                    //rest_col_obj.linenum = i; //start for i = 1
-                    //rest_col_obj.colnum = j+1; //start from 1
-                    //rest_col_obj.value = column;
-
-                    //data_values.push( rest_col_obj );
-
-                }
-
-
-            });
+            }); //end of each
 
             if(i == 0) {
                 table_head.appendChild(table_row);
-                //table_footer.appendChild(table_row.cloneNode(true));
             } else {
                 table_body.appendChild(table_row);
             }
 
-            //preview_table.appendChild(table_row);
-
         });
 
         preview_table.appendChild(table_head);
-
-        //preview_table.appendChild(table_footer);
-
 
         preview_table.appendChild(table_body);
 
@@ -261,7 +221,6 @@ $(document).ready(function() {
 
         $('#csvdatapanel').modal('show'); //show data preview modal
 
-
         //finish button pressed
         $('#markersettingsubmit').click(function(event) {
 
@@ -304,11 +263,6 @@ $(document).ready(function() {
                 return;
             }
 
-
-
-
-
-
             var table_area = preview_table.cloneNode(true);
 
             $('#csvdatapanel').modal('hide');
@@ -318,18 +272,12 @@ $(document).ready(function() {
 
             $('#table_data_area').html(table_area);
 
-            //var extra_header_col = document.createElement( "th" );
-            //extra_header_col.innerHTML = 'Hide';
-            //$('#previewtable thead tr').appendChild(extra_header_col);
-
             var hrow = document.querySelectorAll("#previewtable thead tr")[0]; //has only one header row
             var extra_header_col = document.createElement( "th" );
-            extra_header_col.setAttribute("style", "padding: 10px;"); //make size smaller (be rosponsive as possible)
+            extra_header_col.setAttribute("style", "padding: 10px;"); //make size smaller
             extra_header_col.innerHTML = 'Hide';
 
             hrow.appendChild(extra_header_col);
-
-            //$('#previewtable thead tr').append('<th style="padding: 10px;">Hide</th>');
 
             $('#previewtable tbody tr').each(function (index, element) {
 
@@ -364,14 +312,6 @@ $(document).ready(function() {
                 element.appendChild(extra_col);
             });
 
-
-
-
-
-/*
-            $('#previewtable').DataTable();
-*/
-
             $('#previewtable').DataTable( {
                 "aoColumns": [ null, null, null, null, null, null, null, null, null, null, null, { "bSortable": false }  ]
             } );
@@ -382,11 +322,11 @@ $(document).ready(function() {
 
             //prepare markers
             $.each( data_values, function( i, ln ) {
-                //console.log('line=' + field.linenum + ',column=' + field.colnum + ', value: ' + field.value);
+
                 var marker_obj = {};
 
                 $.each( ln, function( j, field ) {
-                    //console.log('line=' + ( i + 1) + ',column=' + ( j + 1 ) + ', value: ' + field);
+
                     if(j == 0) {
                         marker_obj.id = field;
                         //console.log('ok->' + field);
@@ -443,38 +383,14 @@ $(document).ready(function() {
 
             });
 
-/*
-            $('input[id*="hide-"]').click(function(event) {
-                var element = $(this);
-                var mid = $(this).attr('id').split('-')[1];
-                console.log(mid);
-                //markers_in_map
-                $.each( markers_in_map, function( i, marker ) {
-                    if(marker.cid === mid) {
-                        console.log('get in');
-
-                        if($(element).is(':checked')) {
-                            marker.setVisible(false);
-
-                        } else {
-                            marker.setVisible(true);
-                        }
-
-                    }
-                });
-
-            });
-*/
-
-
         }); ////end finish button pressed
 
 
-    });
+    }); //end of submitdata
 
 
 
-});
+}); //end of document ready
 
 function drawMap(markers_arr) {
 
@@ -521,7 +437,6 @@ function drawMap(markers_arr) {
             //markers_arr[i].detail = '<img src="' + markers_arr[i].detail +  '" alt="" style="width: 50px;">';
         }
 
-
 /*
         marker = new google.maps.Marker({
             position: new google.maps.LatLng(markers_arr[i].lat, markers_arr[i].lon),
@@ -561,13 +476,9 @@ function drawMap(markers_arr) {
         bounds.extend (tmp_lating);
     }
 
-
     map.fitBounds (bounds);
 
-
 } //End of drawMap
-
-
 
 function ValidURL(str) {
     var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
