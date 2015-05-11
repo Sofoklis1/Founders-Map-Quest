@@ -17,7 +17,6 @@ body {
     background-color: #222;
 }
 
-
 /* Custom page CSS
 -------------------------------------------------- */
 
@@ -31,10 +30,6 @@ body > .container {
 .footer > .container {
     padding-right: 15px;
     padding-left: 15px;
-}
-
-code {
-    font-size: 80%;
 }
 
 .infotxt {
@@ -86,7 +81,6 @@ code {
     opacity: 0.8;
 }
 
-
 #datapreview {
     overflow: auto;
     font-size: 14px;
@@ -102,7 +96,6 @@ code {
     text-align: center;
     /*min-width: 30px;*/
     vertical-align: middle;
-
 }
 
 #previewtable td {
@@ -116,22 +109,13 @@ code {
 #previewtable, #previewtable tr, #previewtable td, #previewtable th {
     border: 1px solid #ddd;
 }
-/*
-#previewtable tfoot tr, #previewtable tfoot td, #previewtable tfoot th {
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
 
-}
-*/
 @media (max-width: 1023px) {
     #previewtable_wrapper {
         overflow: auto;
         padding-bottom: 10px;
     }
 }
-
-
 
 #previewtable input[type="checkbox"] {
     cursor: pointer;
@@ -156,14 +140,12 @@ code {
     margin: 0;
     padding: 2px 4px;
     font-weight: bold;
-
 }
 
 #marker_lon, #marker_lat, #marker_details, #marker_labels {
     padding: 10px;
     display: inline-block;
     text-align: left;
-    /*margin-right: 10px;*/
 }
 
 #marker_lon_choise, #marker_lat_choise, #marker_details_choise, #marker_label_choise {
