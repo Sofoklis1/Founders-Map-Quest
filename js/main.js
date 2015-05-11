@@ -12,6 +12,7 @@ var data_values = [];
 var markers = [];
 var markers_in_map = [];
 
+var infowindowOpen = null;
 
 $(document).ready(function() {
 
@@ -130,8 +131,27 @@ $(document).ready(function() {
 
         preview_table.appendChild(table_body);
 
-        if(data_headers.length < 2) {
+        if(data_headers.length < 4) {
             $('#datapreview').append('<div class="alert alert-danger" role="alert">ERROR: Wrong delimiter or not a CSV format! Please consult our <strong><a href="help.html">help</a></strong> section.</div>');
+            $('#markersettingsubmit').attr("disabled", "disabled");
+            $('#datapreview').append(preview_table);
+            $('#csvdatapanel').modal('show');
+            return;
+        }
+
+        var tmpcount_error = 0;
+
+        //check if every line has equal number of columns to with header
+        $.each( data_values, function( i, column ) {
+
+            if(column.length != data_headers.length) {
+                tmpcount_error++;
+            }
+
+        }); //end each
+
+        if(tmpcount_error > 0) {
+            $('#datapreview').append('<div class="alert alert-danger" role="alert">ERROR: All lines does not have equal number of columns! Please consult our  <strong><a href="help.html">help</a></strong> section.</div>');
             $('#markersettingsubmit').attr("disabled", "disabled");
             $('#datapreview').append(preview_table);
             $('#csvdatapanel').modal('show');
@@ -205,6 +225,7 @@ $(document).ready(function() {
 
         });//end each
 
+        //start drawing marker settings
         $('#marker_settings_panel').append('<form><fieldset id="marker_settings"><legend>Marker Settings</legend></fieldset></form>');
 
         $('#marker_settings').append('<div id="marker_lat"><label for="marker_lat_choise">Latitude: </label><br> </div>');
@@ -252,13 +273,15 @@ $(document).ready(function() {
                 $('#marker_details_choise').removeClass('highlightred');
             }
 
+            //if marker label is mandatory uncomment the following code
+/*
             if(marker_label_col == 0) {
                 $('#marker_label_choise').addClass('highlightred');
                 count_incomplete++;
             } else {
                 $('#marker_label_choise').removeClass('highlightred');
             }
-
+*/
             if(count_incomplete > 0) {
                 return;
             }
@@ -319,7 +342,6 @@ $(document).ready(function() {
             //add friendly placeholder to search input
             $('#previewtable_filter input[type="search"]').attr("placeholder", "Search table");
 
-
             //prepare markers
             $.each( data_values, function( i, ln ) {
 
@@ -329,7 +351,6 @@ $(document).ready(function() {
 
                     if(j == 0) {
                         marker_obj.id = field;
-                        //console.log('ok->' + field);
                     }
                     if(j == latitude_col - 1) {
                         marker_obj.lat = field;
@@ -359,7 +380,6 @@ $(document).ready(function() {
                 //markers_in_map
                 $.each( markers_in_map, function( i, marker ) {
                     if(marker.cid === mid) {
-                        console.log('get in');
 
                         if($(element).attr('aria-pressed') == 'false') {
                             marker.setVisible(false);
@@ -368,6 +388,10 @@ $(document).ready(function() {
                             $(element).removeClass('btn-primary');
                             $(element).addClass('btn-danger');
                             $(element).attr("title", "Show in map");
+
+                            if(infowindowOpen.cid == marker.cid) {
+                                infowindowOpen.close(); //close marker's infowindow
+                            }
 
                         } else {
                             marker.setVisible(true);
@@ -381,14 +405,11 @@ $(document).ready(function() {
                     }
                 });
 
-            });
+            });//end hide button click
 
         }); ////end finish button pressed
 
-
     }); //end of submitdata
-
-
 
 }); //end of document ready
 
@@ -406,9 +427,7 @@ function drawMap(markers_arr) {
     $('#map_wrapper').attr("style", "display: block;");
     $('#mappage-canvas').attr("style", "display: block;");
 
-
     var latLng = new google.maps.LatLng(markers_arr[0].lat, markers_arr[0].lon);
-
 
     var map = new google.maps.Map(document.getElementById('mappage-canvas'), {
         zoom: 12,
@@ -416,7 +435,7 @@ function drawMap(markers_arr) {
         mapTypeId: google.maps.MapTypeId.ROADMAP
     });
 
-    var infowindow = new google.maps.InfoWindow;
+    infowindowOpen = new google.maps.InfoWindow;
 
     var marker, i;
 
@@ -426,7 +445,8 @@ function drawMap(markers_arr) {
             markers_arr[i].detail = '<img src="' + markers_arr[i].detail +  '" alt="" style="width: 50px;">';
         }
 
-        if( ValidURL(markers_arr[i].label)) {
+        //because marker label is optional
+        if( markers_arr[i].hasOwnProperty('label') && ValidURL(markers_arr[i].label)) {
 
             if(isImage(markers_arr[i].label)) {
                 markers_arr[i].label= '<img src="' + markers_arr[i].label +  '" alt="" style="width: 50px;">';
@@ -434,34 +454,39 @@ function drawMap(markers_arr) {
                 markers_arr[i].label = '<a href="' + markers_arr[i].label +  '" style="position: relative; display: block; z-index: 999;">view</a>';
             }
 
-            //markers_arr[i].detail = '<img src="' + markers_arr[i].detail +  '" alt="" style="width: 50px;">';
         }
 
-/*
-        marker = new google.maps.Marker({
-            position: new google.maps.LatLng(markers_arr[i].lat, markers_arr[i].lon),
-            map: map
-        });
-*/
+        //init map using first marker
         var homeLatLng = new google.maps.LatLng(markers_arr[i].lat, markers_arr[i].lon);
 
-        var marker = new MarkerWithLabel({
-            position: homeLatLng,
-            draggable: false,
-            map: map,
-            labelContent: markers_arr[i].label,
-            labelAnchor: new google.maps.Point(22, 0),
-            labelClass: "markerlabel", // the CSS class for the label
-            labelStyle: {opacity: 1}
-        });
+        if (markers_arr[i].hasOwnProperty('label')) {
+
+            var marker = new MarkerWithLabel({
+                position: homeLatLng,
+                draggable: false,
+                map: map,
+                labelContent: markers_arr[i].label,
+                labelAnchor: new google.maps.Point(22, 0),
+                labelClass: "markerlabel", // the CSS class for the label
+                labelStyle: {opacity: 1}
+            });
+
+        } else {
+
+            var marker = new google.maps.Marker({
+                position: new google.maps.LatLng(markers_arr[i].lat, markers_arr[i].lon),
+                map: map
+            });
+
+        }
 
         marker.cid = markers_arr[i].id;
-       // markers_in_map.set("id", markers_arr[i].id);
 
         google.maps.event.addListener(marker, 'click', (function(marker, i) {
             return function() {
-                infowindow.setContent(markers[i].detail);
-                infowindow.open(map, marker);
+                infowindowOpen.setContent(markers[i].detail);
+                infowindowOpen.cid = marker.cid; //use it when hide marker to hide infowindow
+                infowindowOpen.open(map, marker);
             }
         })(marker, i));
 
