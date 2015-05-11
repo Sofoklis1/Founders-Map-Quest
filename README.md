@@ -1,7 +1,9 @@
 # Founders Map Quest
 
-## External Libraries
+## Libraries
 
-* [jQuery](https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js) 
-* [Bootstrap Framework](http://getbootstrap.com/) 
-* [DataTables Table plug-in for jQuery](https://datatables.net/)
+* [jQuery (CDN)](https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js) 
+* [Bootstrap Framework (CDN)](http://getbootstrap.com/) 
+* [DataTables Table plug-in for jQuery (CDN)](https://datatables.net/)
+* [Google Maps API](http://maps.google.com/maps/api/js?sensor=false)
+* [MarkerWithLabel](https://google-maps-utility-library-v3.googlecode.com/svn/tags/markerwithlabel/1.1.9/src/markerwithlabel.js)

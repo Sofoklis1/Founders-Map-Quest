@@ -59,6 +59,12 @@ $(document).ready(function() {
         $.each( all_lines, function( i, line ) {
 
             var columns = line.split(delimiters[delimeter_choise]);
+
+            //empty line or wrong delimeter
+            if(columns.length == 1) {
+                return true;
+            }
+
             var table_row = document.createElement( "tr" );
             var img, link;
 
