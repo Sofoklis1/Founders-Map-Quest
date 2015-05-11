@@ -1,5 +1,6 @@
 /**
- * Created by sofos on 5/8/2015.
+ * Created by Sofoklis Stouraitis
+ * email: sofos@aueb.gr
  */
 
 var delimiters = { "1" : ",", "2" : ";", "3" : "\t"  };
@@ -9,9 +10,8 @@ var thumbnail_width = 50;
 
 var data_headers = [];
 var data_values = [];
-var markers = [];
-var markers_in_map = [];
 
+var markers_in_map = [];
 var infowindowOpen = null;
 
 $(document).ready(function() {
@@ -55,13 +55,11 @@ $(document).ready(function() {
 
         var table_head = document.createElement( "thead" );
         var table_body = document.createElement( "tbody" );
-        //var table_footer = document.createElement( "tfoot" );
 
         $.each( all_lines, function( i, line ) {
 
             var columns = line.split(delimiters[delimeter_choise]);
             var table_row = document.createElement( "tr" );
-            //var header_row = document.createElement( "tr" );
             var img, link;
 
             if(i == 0) {
@@ -112,7 +110,7 @@ $(document).ready(function() {
 
                     table_row.appendChild(simple_col);
                     if(j == 0) {
-                        table_row.setAttribute("id", "dataid-" + column); //add data id in id of every tr
+                        table_row.setAttribute("id", "dataid-" + getUUID()); //add a unique id in every tr
                     }
 
                 }//end of else
@@ -302,9 +300,34 @@ $(document).ready(function() {
 
             hrow.appendChild(extra_header_col);
 
+            var markers = [];
+
             $('#previewtable tbody tr').each(function (index, element) {
 
                 var data_row_id = $(element).attr('id').split('-')[1];
+                var marker_obj = {};
+                marker_obj.id = data_row_id; //asign a unique uuid as id to every marker object
+
+                $(element).children('td').each(function (j, col) {
+
+                    var col_value = $(col).html();
+
+                    if(j == latitude_col - 1) {
+                        marker_obj.lat = col_value;
+                    }
+                    if(j == longitude_col - 1) {
+                        marker_obj.lon = col_value;
+                    }
+                    if(j == marker_details_col - 1) {
+                        marker_obj.detail = col_value;
+                    }
+                    if(j == marker_label_col - 1) {
+                        marker_obj.label = col_value;
+                    }
+
+                }); //end inner each
+
+                markers.push(marker_obj);
 
                 var extra_col = document.createElement( "td" );
                 extra_col.setAttribute("style", "padding: 10px;");
@@ -316,24 +339,16 @@ $(document).ready(function() {
                 input_checkbox.setAttribute("aria-pressed", "false");
                 input_checkbox.setAttribute("autocomplete", "false");
                 input_checkbox.setAttribute("id", "hide-" + data_row_id);
-                //input_checkbox.setAttribute("value", data_row_id);
                 input_checkbox.setAttribute("title", "Hide from map");
 
                 var input_icon = document.createElement( "span" );
                 input_icon.setAttribute("class", "glyphicon glyphicon-eye-open");
                 input_checkbox.appendChild(input_icon);
 
-/*
-                var input_checkbox = document.createElement( "input" );
-                input_checkbox.setAttribute("type", "checkbox");
-                input_checkbox.setAttribute("id", "hide-" + data_row_id);
-                input_checkbox.setAttribute("value", data_row_id);
-                input_checkbox.setAttribute("title", "Hide from map");
-*/
                 extra_col.appendChild(input_checkbox);
-
                 element.appendChild(extra_col);
-            });
+
+            });//end each
 
             $('#previewtable').DataTable( {
                 "aoColumns": [ null, null, null, null, null, null, null, null, null, null, null, { "bSortable": false }  ]
@@ -342,41 +357,12 @@ $(document).ready(function() {
             //add friendly placeholder to search input
             $('#previewtable_filter input[type="search"]').attr("placeholder", "Search table");
 
-            //prepare markers
-            $.each( data_values, function( i, ln ) {
-
-                var marker_obj = {};
-
-                $.each( ln, function( j, field ) {
-
-                    if(j == 0) {
-                        marker_obj.id = field;
-                    }
-                    if(j == latitude_col - 1) {
-                        marker_obj.lat = field;
-                    }
-                    if(j == longitude_col - 1) {
-                        marker_obj.lon = field;
-                    }
-                    if(j == marker_details_col - 1) {
-                        marker_obj.detail = field;
-                    }
-                    if(j == marker_label_col - 1) {
-                        marker_obj.label = field;
-                    }
-
-                });
-
-                markers.push(marker_obj);
-
-            });
-
             drawMap(markers);
 
             $('button[id^="hide-"]').click(function(event) {
                 var element = $(this);
                 var mid = $(this).attr('id').split('-')[1];
-                console.log(mid);
+                //console.log(mid);
                 //markers_in_map
                 $.each( markers_in_map, function( i, marker ) {
                     if(marker.cid === mid) {
@@ -427,6 +413,7 @@ function drawMap(markers_arr) {
     $('#map_wrapper').attr("style", "display: block;");
     $('#mappage-canvas').attr("style", "display: block;");
 
+    //init map using first marker
     var latLng = new google.maps.LatLng(markers_arr[0].lat, markers_arr[0].lon);
 
     var map = new google.maps.Map(document.getElementById('mappage-canvas'), {
@@ -441,22 +428,6 @@ function drawMap(markers_arr) {
 
     for (i = 0; i < markers_arr.length; i++) {
 
-        if( ValidURL(markers_arr[i].detail) && isImage(markers_arr[i].detail)) {
-            markers_arr[i].detail = '<img src="' + markers_arr[i].detail +  '" alt="" style="width: 50px;">';
-        }
-
-        //because marker label is optional
-        if( markers_arr[i].hasOwnProperty('label') && ValidURL(markers_arr[i].label)) {
-
-            if(isImage(markers_arr[i].label)) {
-                markers_arr[i].label= '<img src="' + markers_arr[i].label +  '" alt="" style="width: 50px;">';
-            } else {
-                markers_arr[i].label = '<a href="' + markers_arr[i].label +  '" style="position: relative; display: block; z-index: 999;">view</a>';
-            }
-
-        }
-
-        //init map using first marker
         var homeLatLng = new google.maps.LatLng(markers_arr[i].lat, markers_arr[i].lon);
 
         if (markers_arr[i].hasOwnProperty('label')) {
@@ -484,7 +455,7 @@ function drawMap(markers_arr) {
 
         google.maps.event.addListener(marker, 'click', (function(marker, i) {
             return function() {
-                infowindowOpen.setContent(markers[i].detail);
+                infowindowOpen.setContent(markers_arr[i].detail);
                 infowindowOpen.cid = marker.cid; //use it when hide marker to hide infowindow
                 infowindowOpen.open(map, marker);
             }
@@ -533,3 +504,22 @@ function isImage(str) {
 
     return false;
 } //end of isImage
+
+function getUUID() {
+
+    var chars = '0123456789abcdef'.split('');
+
+    var uuid = [], rnd = Math.random, r;
+    uuid[8] = uuid[13] = uuid[18] = uuid[23] = '_';
+    uuid[14] = '4'; // version 4
+
+    for (var i = 0; i < 36; i++) {
+        if (!uuid[i]) {
+            r = 0 | rnd()*16;
+            uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r & 0xf];
+        }
+    }
+
+    return 'uuid_' + uuid.join('');
+
+}//end of getUUID
