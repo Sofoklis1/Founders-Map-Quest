@@ -400,6 +400,11 @@ $(document).ready(function() {
 
 }); //end of document ready
 
+/**
+ * Draws the map
+ *
+ * @param markers_arr
+ */
 function drawMap(markers_arr) {
 
     //check if valid latiture and longitute before draw map
@@ -477,6 +482,13 @@ function drawMap(markers_arr) {
 
 } //End of drawMap
 
+/**
+ * Checks a String if is a valid url
+ *
+ * @param str
+ * @returns {boolean}
+ * @constructor
+ */
 function ValidURL(str) {
     var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
         '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
@@ -491,14 +503,20 @@ function ValidURL(str) {
     }
 } //end of ValidURL
 
-function isImage(str) {
+/**
+ * Check if a URL coresponts to image
+ *
+ * @param url
+ * @returns {boolean}
+ */
+function isImage(url) {
 
     for (var i = 0; i < image_extensions.length; i++) {
 
         var test_selector = image_extensions[i] + '$';
         var pattern = new RegExp(test_selector);
 
-        if((pattern).test(str)) {
+        if((pattern).test(url)) {
             return true;
         }
     }
@@ -506,6 +524,11 @@ function isImage(str) {
     return false;
 } //end of isImage
 
+/**
+ * Generates a unique uuid.
+ *
+ * @returns {string}
+ */
 function getUUID() {
 
     var chars = '0123456789abcdef'.split('');
