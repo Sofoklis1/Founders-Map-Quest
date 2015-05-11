@@ -222,11 +222,6 @@ $(document).ready(function() {
             select_marker_details.appendChild(detail_opt);
             select_marker_label.appendChild(label_opt);
 
-            //select_marker_lon.appendChild(select_option);
-            //select_marker_lat.appendChild(select_option.cloneNode(true));
-            //select_marker_details.appendChild(select_option.cloneNode(true));
-            //select_marker_label.appendChild(select_option.cloneNode(true));
-
         });//end each
 
         //start drawing marker settings
