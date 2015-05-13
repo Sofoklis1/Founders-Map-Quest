@@ -17,6 +17,7 @@ var infowindowOpen = null;
 
 $(document).ready(function () {
 
+    //Next button pressed
     $('#submitdata').click(function (event) {
 
         var delimeter_choise = $('#datadelimiterchoise').val();
@@ -91,14 +92,21 @@ $(document).ready(function () {
 
                         if (isImage(column)) {
                             isColImage = true;
-
+                            var filename = column.match(/.*\/(.*)$/)[1]; //get filename
                             img = createElement("img", {
                                 "src": column,
-                                "alt": "image display",
+                                "alt": filename,
                                 "width": thumbnail_width + "px;",
                                 "class": "customthumbnail"
                             });
-                            simple_col.appendChild(img);
+                            //preview mage link
+                            var img_lnk = createElement("a", {
+                                "href": column,
+                                "target": "_blank",
+                                "title": "Click to view image"
+                            });
+                            img_lnk.appendChild(img);
+                            simple_col.appendChild(img_lnk);
                         }
 
                         if (!isColImage) { //it's a link
@@ -279,7 +287,8 @@ $(document).ready(function () {
 
             var hrow = document.querySelectorAll("#previewtable thead tr")[0]; //header row
 
-            var extra_header_col = createElement("th", {"style": "padding: 10px;"}, "");
+            //var extra_header_col = createElement("th", {"style": "padding: 10px;"}, "Marker");
+            var extra_header_col = createElement("th", {"id": "short_markers"}, "Marker");
 
             hrow.appendChild(extra_header_col);
 
@@ -289,7 +298,7 @@ $(document).ready(function () {
 
                 var data_row_id = $(element).attr('id').split('-')[1];
                 var marker_obj = {};
-                marker_obj.id = data_row_id; //assign a unique id to every marker
+                marker_obj.id = data_row_id; //assign id to every marker
 
                 $(element).children('td').each(function (j, col) {
 
@@ -335,8 +344,28 @@ $(document).ready(function () {
 
             });//end each
 
+            $.fn.dataTable.ext.order['dom-button'] = function (settings, col) {
+                return this.api().column(col, {order: 'index'}).nodes().map(function (td, i) {
+                    return $('button', td).attr('aria-pressed') == 'true' ? '1' : '0';
+                });
+            }
+
+            $.fn.dataTable.ext.order['dom-url'] = function (settings, col) {
+                return this.api().column(col, {order: 'index'}).nodes().map(function (td, i) {
+                    return $('a', td).attr('href');
+                });
+            }
+
             $('#previewtable').DataTable({
-                "aoColumns": [null, null, null, null, null, null, null, null, null, null, null, {"bSortable": false}]
+                "columns": [
+                    null, null, null, null, null, null, null, null,
+                    {"orderDataType": "dom-url"},
+                    null, null,
+                    {"orderDataType": "dom-button"}
+                ],
+                "columnDefs": [
+                    {"type": "alt-string", targets: 7}
+                ]
             });
 
             //add placeholder to search input
@@ -510,7 +539,7 @@ function drawMap(markers_arr) {
         google.maps.event.addListener(marker, 'click', (function (marker, i) {
             return function () {
                 infowindowOpen.setContent(markers_arr[i].detail);
-                infowindowOpen.cid = marker.cid; //use it when hide marker to hide infowindow
+                infowindowOpen.cid = marker.cid; //use it when hide marker
                 infowindowOpen.open(map, marker);
             }
         })(marker, i));
