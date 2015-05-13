@@ -8,7 +8,7 @@
 * [Google Maps API](http://maps.google.com/maps/api/js?sensor=false)
 * [MarkerWithLabel](https://google-maps-utility-library-v3.googlecode.com/svn/tags/markerwithlabel/1.1.9/src/markerwithlabel.js)
 
-## Features
+## Extras
 
 * Searches and detects which columns contain valid (numeric) coordinates for both latitude and longitude and generates
  options in lists. Note: If a single value from column fails to validate then exclude whole column from option.
