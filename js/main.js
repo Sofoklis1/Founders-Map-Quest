@@ -6,6 +6,7 @@
 var delimiters = {"1": ",", "2": ";", "3": "\t"};
 var image_extensions = [".jpg", ".png", ".jpeg", ".gif", ".svg"]; //add more image extensions here
 var thumbnail_width = 50;
+var total_csv_columns = 11;
 //var thumbnail_height = 50;
 var data_headers = [];
 var data_values = [];
@@ -143,9 +144,11 @@ $(document).ready(function () {
         preview_table.appendChild(table_head);
         preview_table.appendChild(table_body);
 
-        //we assume that we need at least 3 columns in CSV (2 for coordinates and 1 for details)
-        if (data_headers.length < 3) {
-            $('#datapreview').append(showErrorMessage('ERROR: Wrong delimiter or not a CSV format! Please consult our <strong><a href="help.html">Help</a></strong> section.'));
+        //assume that we need exact number of columns just as in sample.csv, if not change value in total_csv_columns
+        if (data_headers.length != total_csv_columns) {
+            $('#datapreview').append(showErrorMessage('ERROR: Wrong delimiter or wrong number of columns, found: '
+            + data_headers.length + ', require: ' + total_csv_columns + ' ! Please consult our <a href="help.html">Help</a> section.'));
+
             $('#markersettingsubmit').attr("disabled", "disabled");
             $('#datapreview').append(preview_table);
             $('#csvdatapanel').modal('show');
@@ -164,7 +167,7 @@ $(document).ready(function () {
         }); //end each
 
         if (tmpcount_error > 0) {
-            $('#datapreview').append(showErrorMessage('ERROR: Corrupted CSV, lines does not have equal number of columns! Please consult our  <strong><a href="help.html">Help</a></strong> section.'));
+            $('#datapreview').append(showErrorMessage('ERROR: Corrupted CSV, lines does not have equal number of columns! Please consult our <a href="help.html">Help</a> section.'));
             $('#markersettingsubmit').attr("disabled", "disabled");
             $('#datapreview').append(preview_table);
             $('#csvdatapanel').modal('show');
@@ -408,6 +411,25 @@ $(document).ready(function () {
 
             });//end hide button click
 
+            //bounce marker when hover on button
+            $('#previewtable tbody').on('mouseover', 'button', function (e) {
+
+                var element = $(this);
+                var mid = $(this).attr('id').split('-')[1];
+
+                $.each(markers_in_map, function (i, marker) {
+                    if (marker.cid === mid) {
+                        marker.setAnimation(null);
+                        marker.setAnimation(google.maps.Animation.BOUNCE);
+                        setTimeout(function () {
+                            marker.setAnimation(null);
+                        }, 300);
+
+                    }
+                });
+
+            });//end mouover
+
         }); ////end finish button pressed
 
     }); //end of submitdata
@@ -522,7 +544,8 @@ function drawMap(markers_arr) {
                 labelAnchor: new google.maps.Point(22, 0),
                 labelClass: "markerlabel", // the CSS class for the label
                 labelStyle: {opacity: 1},
-                cid: markers_arr[i].id
+                cid: markers_arr[i].id,
+                optimized: false
             });
 
         } else {
@@ -530,7 +553,8 @@ function drawMap(markers_arr) {
             marker = new google.maps.Marker({
                 position: new google.maps.LatLng(markers_arr[i].lat, markers_arr[i].lon),
                 map: map,
-                cid: markers_arr[i].id
+                cid: markers_arr[i].id,
+                optimized: false
             });
 
         }

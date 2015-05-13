@@ -80,12 +80,12 @@
             <code>Step 4:</code> Press <b>Next</b> to proceed
         </p>
         <p>
-            <label for="importdatafield">CSV</label>
+            <label class="required" for="importdatafield">CSV</label>
             <br>
             <textarea id="importdatafield" class="form-control" rows="5" placeholder="Paste data in CSV format"></textarea>
         </p>
         <p>
-            <label for="datadelimiterchoise">Delimiter </label>
+            <label class="required" for="datadelimiterchoise">Delimiter</label>
             <br>
             <select id="datadelimiterchoise">
                 <option value="0">- Choose Delimiter -</option>
@@ -93,6 +93,9 @@
                 <option value="2">Semicolon</option>
                 <option value="3">Tab</option>
             </select>
+        </p>
+        <p>
+            <span class="required">Required fields</span>
         </p>
         <p class="text-right">
             <button id="cleardata" type="reset" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-trash"></span> Clear</button> <button id="submitdata" type="button" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-import"></span> Next</button>
@@ -113,21 +116,22 @@
                         <fieldset id="marker_settings">
                             <legend>Marker Settings</legend>
                             <div id="marker_lat">
-                                <label for="marker_lat_choise">Latitude: </label>
+                                <label class="required" for="marker_lat_choise">Latitude: </label>
                                 <select id="marker_lat_choise"></select>
                             </div>
                             <div id="marker_lon">
-                                <label for="marker_lon_choise">Longitude: </label>
+                                <label class="required" for="marker_lon_choise">Longitude: </label>
                                 <select id="marker_lon_choise"></select>
                             </div>
                             <div id="marker_details">
-                                <label for="marker_details_choise">Point details: </label>
+                                <label class="required" for="marker_details_choise">Point details: </label>
                                 <select id="marker_details_choise"></select>
                             </div>
                             <div id="marker_labels">
                                 <label for="marker_label_choise">Marker label: </label>
                                 <select id="marker_label_choise"></select>
                             </div>
+                            <p class="text-left"><span class="required"><small>Required fields</small></span></p>
                         </fieldset>
 
                     </div>

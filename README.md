@@ -13,6 +13,7 @@
 * Searches and detects which columns contain valid (numeric) coordinates for both latitude and longitude and generates
  options in lists. Note: If a single value from column fails to validate then exclude whole column from option.
 * Order table by visible/hidden markers 
+* Marker bounce when hover on button
 
 ## Browser Compatibility
 * Chrome

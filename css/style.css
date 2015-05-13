@@ -46,6 +46,15 @@ body > .container {
     height: 30px;
 }
 
+.required:after {
+    color: #d02121;
+    content: "*";
+    font-size: 18px;
+    font-weight: bold;
+    line-height: normal;
+    margin-left: 3px;
+}
+
 .highlightred {
     outline: 1px solid #d02121;
 }
@@ -117,6 +126,23 @@ body > .container {
     }
 }
 
+@media (max-width: 783px) {
+    #marker_settings div {
+        width: 40%;
+    }
+}
+
+@media (max-width: 536px) {
+    #marker_settings div {
+        width: 50%;
+    }
+}
+@media (max-width: 383px) {
+    #marker_settings div {
+        width: 100%;
+    }
+}
+
 #previewtable input[type="checkbox"] {
     cursor: pointer;
 }
@@ -140,6 +166,10 @@ body > .container {
     margin: 0;
     padding: 2px 4px;
     font-weight: bold;
+}
+
+#marker_settings label {
+    display: block;
 }
 
 #marker_lon, #marker_lat, #marker_details, #marker_labels {
@@ -193,6 +223,7 @@ body > .container {
     height: 25px;
     font-size: 14px;
     font-weight: normal;
+    padding-left: 4px;
 }
 
 @media (max-width: 654px) {
