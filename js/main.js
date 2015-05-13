@@ -373,7 +373,7 @@ $(document).ready(function () {
             drawMap(markers);
 
             //button hide/show marker is pressed
-            $('#previewtable').on('click', 'button', function (e) {
+            $('#previewtable tbody').on('click', 'button', function (e) {
                 var element = $(this);
                 var mid = $(this).attr('id').split('-')[1];
 
