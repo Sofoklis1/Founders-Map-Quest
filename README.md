@@ -7,3 +7,8 @@
 * [DataTables Table plug-in for jQuery (CDN)](https://datatables.net/)
 * [Google Maps API](http://maps.google.com/maps/api/js?sensor=false)
 * [MarkerWithLabel](https://google-maps-utility-library-v3.googlecode.com/svn/tags/markerwithlabel/1.1.9/src/markerwithlabel.js)
+
+## Features
+
+* Searches and detects which columns contain valid (numeric) coordinates for both latitude and longitude and generates
+ options in lists. Note: If a single value from column fails to validate then exclude whole list from selection.
