@@ -11,4 +11,4 @@
 ## Features
 
 * Searches and detects which columns contain valid (numeric) coordinates for both latitude and longitude and generates
- options in lists. Note: If a single value from column fails to validate then exclude whole list from selection.
+ options in lists. Note: If a single value from column fails to validate then exclude whole column.
