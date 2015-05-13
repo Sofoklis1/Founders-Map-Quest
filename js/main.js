@@ -344,27 +344,26 @@ $(document).ready(function () {
 
             });//end each
 
+            /* create shorting for markers column */
             $.fn.dataTable.ext.order['dom-button'] = function (settings, col) {
                 return this.api().column(col, {order: 'index'}).nodes().map(function (td, i) {
                     return $('button', td).attr('aria-pressed') == 'true' ? '1' : '0';
                 });
             }
 
+            /* create shorting for URL column */
             $.fn.dataTable.ext.order['dom-url'] = function (settings, col) {
                 return this.api().column(col, {order: 'index'}).nodes().map(function (td, i) {
                     return $('a', td).attr('href');
                 });
             }
 
+            //init plugin
             $('#previewtable').DataTable({
-                "columns": [
-                    null, null, null, null, null, null, null, null,
-                    {"orderDataType": "dom-url"},
-                    null, null,
-                    {"orderDataType": "dom-button"}
-                ],
                 "columnDefs": [
-                    {"type": "alt-string", targets: 7}
+                    {"type": "alt-string", targets: 7},
+                    {"orderDataType": "dom-url", targets: 8},
+                    {"orderDataType": "dom-button", targets: data_headers.length}//in case not use sample.csv format
                 ]
             });
 
