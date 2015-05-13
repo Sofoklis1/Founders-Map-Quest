@@ -9,6 +9,9 @@ var thumbnail_width = 50;
 //var thumbnail_height = 50;
 var data_headers = [];
 var data_values = [];
+var valid_lat_cols = [];
+var valid_lon_cols = [];
+
 var markers_in_map = [];
 var infowindowOpen = null;
 
@@ -18,31 +21,17 @@ $(document).ready(function () {
 
         var delimeter_choise = $('#datadelimiterchoise').val();
         var datacsv = $('#importdatafield').val();
-        var count_errors = 0;
 
-        //starting fields validation
-        if (delimeter_choise == 0) {
-            $('#datadelimiterchoise').addClass('highlightred');
-            count_errors++;
-        } else {
-            $('#datadelimiterchoise').removeClass('highlightred');
-        }
-
-        if (datacsv.length == 0) {
-            $('#importdatafield').addClass('highlightred');
-            count_errors++;
-        } else {
-            $('#importdatafield').removeClass('highlightred');
-        }
-
-        if (count_errors > 0) {
+        if (!validateUserInput(datacsv, delimeter_choise)) {
             return;
         }
 
         $('#datapreview').html('');//clear preview area
-        $('#marker_settings_panel').html(''); //clear marker settings area
+        $('#marker_settings_panel').hide();
         data_headers = []; //clear headers
         data_values = []; //clear data
+        valid_lat_cols = [];
+        valid_lon_cols = [];
 
         var all_lines = $('textarea').val().split('\n');
 
@@ -59,7 +48,7 @@ $(document).ready(function () {
 
             var columns = line.split(delimiters[delimeter_choise]);
 
-            //empty line or wrong delimeter
+            //skip empty line or wrong delimeter
             if (columns.length == 1) {
                 return true;
             }
@@ -78,10 +67,22 @@ $(document).ready(function () {
                 if (i == 0) { //header - first line
 
                     var header_col = createElement("th", null, column);
-                    //header_col.innerHTML = column;
                     table_row.appendChild(header_col);
 
                 } else {
+
+                    if (isLatitude(column)) {
+                        valid_lat_cols[data_headers[j]] = true;
+                    } else {
+                        valid_lat_cols[data_headers[j]] = false;
+                    }
+
+                    if (isLongitide(column)) {
+                        valid_lon_cols[data_headers[j]] = true;
+                    } else {
+                        valid_lon_cols[data_headers[j]] = false;
+                    }
+
                     var simple_col = createElement("td");
 
                     if (ValidURL(column)) {
@@ -116,7 +117,7 @@ $(document).ready(function () {
 
                     table_row.appendChild(simple_col);
                     if (j == 0) {
-                        table_row.setAttribute("id", "dataid-" + getUUID()); //add a unique id in every tr
+                        table_row.setAttribute("id", "dataid-" + getUUID()); //add id in every tr
                     }
 
                 }//end of else
@@ -132,11 +133,11 @@ $(document).ready(function () {
         });
 
         preview_table.appendChild(table_head);
-
         preview_table.appendChild(table_body);
 
-        if (data_headers.length < 4) {
-            $('#datapreview').append(showErrorMessage('ERROR: Wrong delimiter or not a CSV format! Please consult our <strong><a href="help.html">help</a></strong> section.'));
+        //we assume that we need at least 3 columns in CSV (2 for coordinates and 1 for details)
+        if (data_headers.length < 3) {
+            $('#datapreview').append(showErrorMessage('ERROR: Wrong delimiter or not a CSV format! Please consult our <strong><a href="help.html">Help</a></strong> section.'));
             $('#markersettingsubmit').attr("disabled", "disabled");
             $('#datapreview').append(preview_table);
             $('#csvdatapanel').modal('show');
@@ -155,9 +156,44 @@ $(document).ready(function () {
         }); //end each
 
         if (tmpcount_error > 0) {
-            $('#datapreview').append(showErrorMessage('ERROR: Corrupted CSV, lines does not have equal number of columns! Please consult our  <strong><a href="help.html">help</a></strong> section.'));
+            $('#datapreview').append(showErrorMessage('ERROR: Corrupted CSV, lines does not have equal number of columns! Please consult our  <strong><a href="help.html">Help</a></strong> section.'));
             $('#markersettingsubmit').attr("disabled", "disabled");
             $('#datapreview').append(preview_table);
+            $('#csvdatapanel').modal('show');
+            return;
+        }
+
+        var count_lat_col = 0;
+        var count_lon_col = 0;
+
+        /* We need at least 2 columns that contain valid coordinates, if not => wrong CSV */
+        $.each(data_headers, function (i, column) {
+            //valid_lon_cols
+            //valid_lat_cols
+
+            if (valid_lat_cols[column]) {
+                count_lat_col++;
+            }
+            if (valid_lon_cols[column]) {
+                count_lon_col++;
+            }
+
+        }); //end each data_headers
+
+        if (count_lat_col == 0) {
+            $('#datapreview').append(showErrorMessage('ERROR: Could not match a column for acceptable Latitude values. Please check you CSV data.'));
+            $('#markersettingsubmit').attr("disabled", "disabled");
+            $('#datapreview').append(preview);
+            $('#marker_settings_panel').hide();
+            $('#csvdatapanel').modal('show');
+            return;
+        }
+
+        if (count_lon_col == 0) {
+            $('#datapreview').append(showErrorMessage('ERROR: Could not match a column for acceptable Longitude values. Please check you CSV data.'));
+            $('#markersettingsubmit').attr("disabled", "disabled");
+            $('#datapreview').append(preview);
+            $('#marker_settings_panel').hide();
             $('#csvdatapanel').modal('show');
             return;
         }
@@ -166,67 +202,59 @@ $(document).ready(function () {
 
         $('#datapreview').append(preview_table);
 
-        var select_marker_lon = createElement("select", {"id": "marker_lon_choise"});
-        var select_marker_lat = createElement("select", {"id": "marker_lat_choise"});
-        var select_marker_details = createElement("select", {"id": "marker_details_choise"});
-        var select_marker_label = createElement("select", {"id": "marker_label_choise"});
+        /* Starting builing markers settings area */
+
+        $('#marker_lon_choise').html('');
+        $('#marker_lat_choise').html('');
+        $('#marker_details_choise').html('');
+        $('#marker_label_choise').html('');
+
+        var select_option_null = createElement("option", {"value": 0}, "-- select column --");
+        $('#marker_lon_choise').append(select_option_null);
+        $('#marker_lat_choise').append(select_option_null.cloneNode(true));
+        $('#marker_details_choise').append(select_option_null.cloneNode(true));
+        $('#marker_label_choise').append(select_option_null.cloneNode(true));
 
         $.each(data_headers, function (i, field) {
 
-            if (i == 0) {
-
-                var select_option_null = createElement("option", {"value": 0}, "-- select column --");
-
-                select_marker_lon.appendChild(select_option_null);
-                select_marker_lat.appendChild(select_option_null.cloneNode(true));
-                select_marker_details.appendChild(select_option_null.cloneNode(true));
-                select_marker_label.appendChild(select_option_null.cloneNode(true));
-            }
-
             var select_option = createElement("option", {"value": i + 1}, field);
             var lat_opt = select_option.cloneNode(true);
+            var lon_opt = select_option.cloneNode(true);
             var detail_opt = select_option.cloneNode(true);
-            var label_opt = select_option.cloneNode(true);
+
+            if (valid_lat_cols[field]) {
+                if (i == 9) { //if user keeps sample.csv format, column 10 contains latitude, if not have to choose column
+                    lat_opt.setAttribute("selected", "selected");
+                }
+                $('#marker_lat_choise').append(lat_opt);
+            }
+
+            if (valid_lon_cols[field]) {
+                if (i == 10) { //if user keeps sample.csv format, column 11 contains longitude, if not have to choose column
+                    lon_opt.setAttribute("selected", "selected");
+                }
+                $('#marker_lon_choise').append(lon_opt);
+            }
 
             if (i == 1) { //label column
-                label_opt.setAttribute("selected", "selected");
+                select_option.setAttribute("selected", "selected"); //make a deafult choise for label column 2 (company)
             }
 
             if (i == 6) { //marker details column
-                detail_opt.setAttribute("selected", "selected");
+                detail_opt.setAttribute("selected", "selected"); //make a deafult choise for details column 7 (street)
             }
 
-            if (i == 9) {//latitude column
-                lat_opt.setAttribute("selected", "selected");
-            }
+            $('#marker_details_choise').append(detail_opt);
+            $('#marker_label_choise').append(select_option);
 
-            if (i == 10) { //longitute column
-                select_option.setAttribute("selected", "selected");
-            }
-
-            select_marker_lon.appendChild(select_option);
-            select_marker_lat.appendChild(lat_opt);
-            select_marker_details.appendChild(detail_opt);
-            select_marker_label.appendChild(label_opt);
 
         });//end each
 
-        //start drawing marker settings area
-        $('#marker_settings_panel').append('<form><fieldset id="marker_settings"><legend>Marker Settings</legend></fieldset></form>');
+        $('#markersettingsubmit').removeAttr("disabled");
 
-        $('#marker_settings').append('<div id="marker_lat"><label for="marker_lat_choise">Latitude: </label><br> </div>');
-        $('#marker_lat').append(select_marker_lat);
-
-        $('#marker_settings').append('<div id="marker_lon"><label for="marker_lon_choise">Longitude: </label><br> </div>');
-        $('#marker_lon').append(select_marker_lon);
-
-        $('#marker_settings').append('<div id="marker_details"><label for="marker_details_choise">Point details: </label><br> </div>');
-        $('#marker_details').append(select_marker_details);
-
-        $('#marker_settings').append('<div id="marker_labels"><label for="marker_label_choise">Marker label: </label><br> </div>');
-        $('#marker_labels').append(select_marker_label);
-
+        $('#marker_settings_panel').show();
         $('#csvdatapanel').modal('show'); //show data preview modal
+
 
         //finish button pressed
         $('#markersettingsubmit').click(function (event) {
@@ -236,39 +264,7 @@ $(document).ready(function () {
             var marker_details_col = $('#marker_details_choise').val();
             var marker_label_col = $('#marker_label_choise').val();
 
-            var count_incomplete = 0;
-
-            if (longitude_col == 0) {
-                $('#marker_lon_choise').addClass('highlightred');
-                count_incomplete++;
-            } else {
-                $('#marker_lon_choise').removeClass('highlightred');
-            }
-
-            if (latitude_col == 0) {
-                $('#marker_lat_choise').addClass('highlightred');
-                count_incomplete++;
-            } else {
-                $('#marker_lat_choise').removeClass('highlightred');
-            }
-
-            if (marker_details_col == 0) {
-                $('#marker_details_choise').addClass('highlightred');
-                count_incomplete++;
-            } else {
-                $('#marker_details_choise').removeClass('highlightred');
-            }
-
-            //if marker label is mandatory uncomment the following code
-            /*
-             if(marker_label_col == 0) {
-             $('#marker_label_choise').addClass('highlightred');
-             count_incomplete++;
-             } else {
-             $('#marker_label_choise').removeClass('highlightred');
-             }
-             */
-            if (count_incomplete > 0) {
+            if (!validateMarkerSettings(latitude_col, longitude_col, marker_details_col, marker_label_col)) {
                 return;
             }
 
@@ -281,9 +277,9 @@ $(document).ready(function () {
 
             $('#table_data_area').html(table_area);
 
-            var hrow = document.querySelectorAll("#previewtable thead tr")[0]; //has only one header row
+            var hrow = document.querySelectorAll("#previewtable thead tr")[0]; //header row
 
-            var extra_header_col = createElement("th", {"style": "padding: 10px;"}, "Hide");
+            var extra_header_col = createElement("th", {"style": "padding: 10px;"}, "");
 
             hrow.appendChild(extra_header_col);
 
@@ -293,7 +289,7 @@ $(document).ready(function () {
 
                 var data_row_id = $(element).attr('id').split('-')[1];
                 var marker_obj = {};
-                marker_obj.id = data_row_id; //assign a unique uuid as id to every marker
+                marker_obj.id = data_row_id; //assign a unique id to every marker
 
                 $(element).children('td').each(function (j, col) {
 
@@ -318,6 +314,8 @@ $(document).ready(function () {
 
                 var extra_col = createElement("td", {"style": "padding: 10px;"});
 
+                var btn_id = "hide-" + data_row_id;
+
                 var hidebtn = createElement("button",
                     {
                         "type": "button",
@@ -325,7 +323,7 @@ $(document).ready(function () {
                         "data-toggle": "button",
                         "aria-pressed": "false",
                         "autocomplete": "false",
-                        "id": "hide-" + data_row_id,
+                        "id": btn_id,
                         "title": "Click to hide from map"
                     });
 
@@ -347,7 +345,7 @@ $(document).ready(function () {
             drawMap(markers);
 
             //button hide/show marker is pressed
-            $('button[id^="hide-"]').click(function (event) {
+            $('#previewtable').on('click', 'button', function (e) {
                 var element = $(this);
                 var mid = $(this).attr('id').split('-')[1];
 
@@ -361,6 +359,7 @@ $(document).ready(function () {
                             $(element).removeClass('btn-primary');
                             $(element).addClass('btn-danger');
                             $(element).attr("title", "Click to show in map");
+                            $(element).parent().parent().addClass("danger");
 
                             if (infowindowOpen.cid == marker.cid) {
                                 infowindowOpen.close(); //close marker's infowindow
@@ -373,6 +372,7 @@ $(document).ready(function () {
                             $(element).removeClass('btn-danger');
                             $(element).addClass('btn-primary');
                             $(element).attr("title", "Click to hide from map");
+                            $(element).parent().parent().removeClass("danger");
                         }
 
                     }
@@ -385,6 +385,57 @@ $(document).ready(function () {
     }); //end of submitdata
 
 }); //end of document ready
+
+/**
+ * Valdate marker settings in preview data panel.
+ *
+ * @param latval, latitude option from list
+ * @param lonval, longitude option from list
+ * @param detcol, details (markers infowindow) option from list
+ * @param labcol, label option from list
+ * @returns {boolean}
+ */
+function validateMarkerSettings(latval, lonval, detcol, labcol) {
+
+    var count_incomplete = 0;
+
+    if (lonval == 0) {
+        $('#marker_lon_choise').addClass('highlightred');
+        count_incomplete++;
+    } else {
+        $('#marker_lon_choise').removeClass('highlightred');
+    }
+
+    if (latval == 0) {
+        $('#marker_lat_choise').addClass('highlightred');
+        count_incomplete++;
+    } else {
+        $('#marker_lat_choise').removeClass('highlightred');
+    }
+
+    if (detcol == 0) {
+        $('#marker_details_choise').addClass('highlightred');
+        count_incomplete++;
+    } else {
+        $('#marker_details_choise').removeClass('highlightred');
+    }
+
+    //if marker label is mandatory uncomment the following code
+    /*
+     if(labcol == 0) {
+     $('#marker_label_choise').addClass('highlightred');
+     count_incomplete++;
+     } else {
+     $('#marker_label_choise').removeClass('highlightred');
+     }
+     */
+    if (count_incomplete > 0) {
+        return false;
+    }
+
+    return true;
+
+}//end of validateMarkerSettings
 
 /**
  * This function is used to create html elements with attributes and html content
@@ -409,23 +460,12 @@ function createElement(tagname, properties, html) {
 /**
  * Draws the map
  *
- * @param markers_arr
+ * @param markers_arr, an array of "temporary" markers
  */
 function drawMap(markers_arr) {
 
-    //check if valid latiture and longitute before draw map
-    for (i = 0; i < markers_arr.length; i++) {
-        if (isNaN(markers_arr[i].lat) || isNaN(markers_arr[i].lon) || markers_arr[i].lon < -180 || markers_arr[i].lon > 180 || markers_arr[i].lat < -180 || markers_arr[i].lat > 180) {
-
-            $('#message_panel').html(showErrorMessage('ERROR: Found invalid coordinates! Please consult our <strong><a href="help.html">help</a></strong> section.'));
-            $('#message_panel').attr("style", "display: block");
-
-            return;
-        }
-    }//end for
-
-    $('#map_wrapper').attr("style", "display: block;");
-    $('#mappage-canvas').attr("style", "display: block;");
+    $('#map_wrapper').show();
+    $('#mappage-canvas').show();
 
     //init map using first marker
     var latLng = new google.maps.LatLng(markers_arr[0].lat, markers_arr[0].lon);
@@ -446,26 +486,26 @@ function drawMap(markers_arr) {
 
         if (markers_arr[i].hasOwnProperty('label')) {
 
-            var marker = new MarkerWithLabel({
+            marker = new MarkerWithLabel({
                 position: homeLatLng,
                 draggable: false,
                 map: map,
                 labelContent: markers_arr[i].label,
                 labelAnchor: new google.maps.Point(22, 0),
                 labelClass: "markerlabel", // the CSS class for the label
-                labelStyle: {opacity: 1}
+                labelStyle: {opacity: 1},
+                cid: markers_arr[i].id
             });
 
         } else {
 
-            var marker = new google.maps.Marker({
+            marker = new google.maps.Marker({
                 position: new google.maps.LatLng(markers_arr[i].lat, markers_arr[i].lon),
-                map: map
+                map: map,
+                cid: markers_arr[i].id
             });
 
         }
-
-        marker.cid = markers_arr[i].id;
 
         google.maps.event.addListener(marker, 'click', (function (marker, i) {
             return function () {
@@ -478,6 +518,9 @@ function drawMap(markers_arr) {
         markers_in_map.push(marker);
     }
 
+    /*
+     * Fit map to markers
+     */
     var bounds = new google.maps.LatLngBounds();
 
     for (i = 0; i < markers_arr.length; i++) {
@@ -490,6 +533,37 @@ function drawMap(markers_arr) {
 
 } //End of drawMap
 
+/**
+ * This function cheks if a string is a latitude coordinate
+ *
+ * @param str
+ * @returns {boolean} true if is latitude, false otherwise
+ */
+function isLatitude(str) {
+
+    if (str == "" || isNaN(str) || str > 90 || str < -90) {
+        return false;
+    }
+
+    return true;
+
+} //end of function isLatitude
+
+/**
+ * This function cheks if a string is a valid longitude coordinate
+ *
+ * @param str
+ * @returns {boolean}, true if is longitude, false otherwise
+ */
+function isLongitide(str) {
+
+    if (str == "" || isNaN(str) || str > 180 || str < -180) {
+        return false;
+    }
+
+    return true;
+
+} //end of function isLongitide
 
 /**
  * Checks a String if is a valid url
@@ -500,11 +574,11 @@ function drawMap(markers_arr) {
  */
 function ValidURL(str) {
     var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
-    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-    '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+        '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+        '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
     if (!pattern.test(str)) {
         return false;
     } else {
@@ -534,9 +608,9 @@ function isImage(url) {
 } //end of isImage
 
 /**
- * Generates a unique uuid, this function is used to generate unique id for every marker
+ * Generates a uuid, this function is used to generate id for every marker
  *
- * @returns {string}
+ * @returns {string}, representing the UUID (dashes are replaced by underscores)
  */
 function getUUID() {
 
@@ -564,6 +638,37 @@ function getUUID() {
  * @returns {Element}
  */
 function showErrorMessage(htmlmsg) {
-    var alert_element = createElement("div", {"class": "alert alert-danger text-center", "role": "alert"}, htmlmsg);
-    return alert_element;
+    return createElement("div", {"class": "alert alert-danger text-center", "role": "alert"}, htmlmsg);
 }
+
+/**
+ * Checks if user has put any content into textarea and choosed delimeter
+ *
+ * @param csv, csv data
+ * @param delimeter
+ * @returns {boolean}
+ */
+function validateUserInput(csv, delimeter) {
+    var count_errors = 0;
+    //starting fields validation
+    if (delimeter == 0) {
+        $('#datadelimiterchoise').addClass('highlightred');
+        count_errors++;
+    } else {
+        $('#datadelimiterchoise').removeClass('highlightred');
+    }
+
+    if (csv.length == 0) {
+        $('#importdatafield').addClass('highlightred');
+        count_errors++;
+    } else {
+        $('#importdatafield').removeClass('highlightred');
+    }
+
+    if (count_errors > 0) {
+        return false
+    }
+
+    return true;
+
+} //end function validateUserInput
