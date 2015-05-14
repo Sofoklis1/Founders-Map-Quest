@@ -3,16 +3,19 @@
  * email: sofos@aueb.gr
  */
 
+/************************* Settings **********************************/
 var delimiters = {"1": ",", "2": ";", "3": "\t"};
 var image_extensions = [".jpg", ".png", ".jpeg", ".gif", ".svg"]; //add more image extensions here
 var thumbnail_width = 50;
-var total_csv_columns = 11;
 //var thumbnail_height = 50;
+var total_csv_columns = 11;
+/*********************************************************************/
+
 var data_headers = [];
 var data_values = [];
 var valid_lat_cols = [];
 var valid_lon_cols = [];
-
+var detail_cols = [];
 var markers_in_map = [];
 var infowindowOpen = null;
 
@@ -116,7 +119,7 @@ $(document).ready(function () {
                                 "title": "click to view page",
                                 "target": "_blank"
                             }, "URL");
-                            //link.innerHTML = "URL";
+
                             simple_col.appendChild(link);
                         }
 
@@ -223,8 +226,11 @@ $(document).ready(function () {
         var select_option_null = createElement("option", {"value": 0}, "-- select column --");
         $('#marker_lon_choise').append(select_option_null);
         $('#marker_lat_choise').append(select_option_null.cloneNode(true));
-        $('#marker_details_choise').append(select_option_null.cloneNode(true));
+        //$('#marker_details_choise').append(select_option_null.cloneNode(true));
         $('#marker_label_choise').append(select_option_null.cloneNode(true));
+
+        var select_option_group = createElement( "optgroup", {"label": "Select fields"} );
+        $('#marker_details_choise').append(select_option_group);
 
         $.each(data_headers, function (i, field) {
 
@@ -251,9 +257,9 @@ $(document).ready(function () {
                 select_option.setAttribute("selected", "selected"); //make a deafult choise for label column 2 (company)
             }
 
-            if (i == 6) { //marker details column
-                detail_opt.setAttribute("selected", "selected"); //make a deafult choise for details column 7 (street)
-            }
+            //if (i == 6) { //marker details column
+            detail_opt.setAttribute("selected", "selected"); //make a deafult choise for details column 7 (street)
+            //}
 
             $('#marker_details_choise').append(detail_opt);
             $('#marker_label_choise').append(select_option);
@@ -301,6 +307,7 @@ $(document).ready(function () {
 
                 var data_row_id = $(element).attr('id').split('-')[1];
                 var marker_obj = {};
+                marker_obj.detail = [];
                 marker_obj.id = data_row_id; //assign id to every marker
 
                 $(element).children('td').each(function (j, col) {
@@ -313,9 +320,19 @@ $(document).ready(function () {
                     if (j == longitude_col - 1) {
                         marker_obj.lon = col_value;
                     }
-                    if (j == marker_details_col - 1) {
-                        marker_obj.detail = col_value;
-                    }
+
+                    $(detail_cols).each(function (pos, field) {
+                        if(j == field - 1) {
+                            var infoitem = createElement( "div", {"class": "info-item" } );
+                            var labelinfo = createElement("span", {"class" : "info-label text-muted" }, data_headers[j] + ': ');
+                            var infodata = createElement( "span" , {"class" : "info-data" }, col_value );
+
+                            infoitem.appendChild(labelinfo);
+                            infoitem.appendChild(infodata);
+                            marker_obj.detail.push(infoitem);
+                        }
+                    });
+
                     if (j == marker_label_col - 1) {
                         marker_obj.label = col_value;
                     }
@@ -434,6 +451,12 @@ $(document).ready(function () {
 
     }); //end of submitdata
 
+    $('#gototop').click(function (event) {
+
+        $('html, body').animate({scrollTop:0}, 'slow');
+
+    });
+
 }); //end of document ready
 
 /**
@@ -448,6 +471,7 @@ $(document).ready(function () {
 function validateMarkerSettings(latval, lonval, detcol, labcol) {
 
     var count_incomplete = 0;
+    detail_cols = [];
 
     if (lonval == 0) {
         $('#marker_lon_choise').addClass('highlightred');
@@ -463,7 +487,7 @@ function validateMarkerSettings(latval, lonval, detcol, labcol) {
         $('#marker_lat_choise').removeClass('highlightred');
     }
 
-    if (detcol == 0) {
+    if (detcol == null) {
         $('#marker_details_choise').addClass('highlightred');
         count_incomplete++;
     } else {
@@ -481,6 +505,12 @@ function validateMarkerSettings(latval, lonval, detcol, labcol) {
      */
     if (count_incomplete > 0) {
         return false;
+    }
+
+    for(var i = 0; i < detcol.length; i++) {
+        if (detcol[i] != 0) {
+            detail_cols.push(detcol[i]);
+        }
     }
 
     return true;
@@ -534,6 +564,14 @@ function drawMap(markers_arr) {
 
         var homeLatLng = new google.maps.LatLng(markers_arr[i].lat, markers_arr[i].lon);
 
+        var infocanvas = createElement("div"); //auxiliary div
+        var infocontent = createElement("div", { "class": "infocontent" });
+
+        for(var k = 0; k < markers_arr[i].detail.length; k++) {
+            infocontent.appendChild(markers_arr[i].detail[k]);
+        }
+        infocanvas.appendChild(infocontent);
+
         if (markers_arr[i].hasOwnProperty('label')) {
 
             marker = new MarkerWithLabel({
@@ -545,7 +583,8 @@ function drawMap(markers_arr) {
                 labelClass: "markerlabel", // the CSS class for the label
                 labelStyle: {opacity: 1},
                 cid: markers_arr[i].id,
-                optimized: false
+                optimized: false,
+                details: infocanvas
             });
 
         } else {
@@ -554,14 +593,15 @@ function drawMap(markers_arr) {
                 position: new google.maps.LatLng(markers_arr[i].lat, markers_arr[i].lon),
                 map: map,
                 cid: markers_arr[i].id,
-                optimized: false
+                optimized: false,
+                details: infocanvas
             });
 
         }
 
         google.maps.event.addListener(marker, 'click', (function (marker, i) {
             return function () {
-                infowindowOpen.setContent(markers_arr[i].detail);
+                infowindowOpen.setContent( $(marker.details).html() );
                 infowindowOpen.cid = marker.cid; //use it when hide marker
                 infowindowOpen.open(map, marker);
             }

@@ -23,13 +23,30 @@ body {
 body > .container {
     padding: 60px 15px 0;
 }
-.container .text-muted {
-    margin: 20px 0;
-}
 
 .footer > .container {
     padding-right: 15px;
     padding-left: 15px;
+}
+
+.footer > .container .text-muted {
+    margin: 20px 0;
+}
+
+#gototop {
+    position: absolute;
+    top: 12px;
+    right: 10px;
+    font-size: 30px;
+    color: #ccc;
+    outline: none;
+}
+
+#gototop:hover {
+    color: #d02121;
+}
+#gototop:active, #gototop:hover {
+    outline: none;
 }
 
 .infotxt {
@@ -65,11 +82,6 @@ body > .container {
 
 #importdataform button:focus {
     outline: none;
-}
-
-#importdataform select {
-    height: 32px;
-    padding: 4px
 }
 
 #importdataform label {
@@ -176,11 +188,15 @@ body > .container {
     padding: 10px;
     display: inline-block;
     text-align: left;
+    vertical-align: top;
 }
 
-#marker_lon_choise, #marker_lat_choise, #marker_details_choise, #marker_label_choise {
-    height: 32px;
+#marker_details_choise, #marker_lon_choise, #marker_lat_choise, #marker_label_choise   {
     padding: 4px;
+}
+
+#marker_lon_choise, #marker_lat_choise, #marker_label_choise {
+    height: 32px;
 }
 
 #table_data_area {
@@ -232,8 +248,35 @@ body > .container {
     }
 }
 
-#previewtable button[id^="hide-"]:focus, #previewtable button[id^="hide-"]:active {
+#previewtable button:focus, #previewtable button:active {
     outline: none;
+}
+
+.infocontent {
+    padding: 2px;
+}
+
+.info-item img {
+    display: block;
+    width: 80px!important;
+    height: auto!important;
+    max-height: 120px;
+    margin-bottom: 4px;
+}
+
+.info-item {
+    margin: 5px 0;
+    border-bottom: 1px dashed #dddddd;
+    padding: 0 2px;
+}
+
+.info-label {
+    /*font-weight: bold;*/
+}
+
+.info-data {
+    color: #000;
+    font-weight: 300;
 }
 
 /* Help page */
