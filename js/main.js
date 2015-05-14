@@ -43,8 +43,10 @@ $(document).ready(function () {
         var preview = document.createDocumentFragment();
 
         var preview_table = createElement("table", {
-            "class": "table table-bordered table-responsive table-striped table-hover table-responsive",
-            "id": "previewtable"
+            "class": "table table-bordered no-wrap table-striped table-hover dt-responsive",
+            "id": "previewtable",
+            "width": "100%",
+            "cellspacing": "0"
         });
         var table_head = createElement("thead");
         var table_body = createElement("tbody");
@@ -137,6 +139,8 @@ $(document).ready(function () {
             }); //end of each
 
             if (i == 0) {
+                //{ "id" : "header-row" }
+                table_row.setAttribute("id", "header-row");
                 table_head.appendChild(table_row);
             } else {
                 table_body.appendChild(table_row);
@@ -299,7 +303,12 @@ $(document).ready(function () {
             //var extra_header_col = createElement("th", {"style": "padding: 10px;"}, "Marker");
             var extra_header_col = createElement("th", {"id": "short_markers"}, "Marker");
 
-            hrow.appendChild(extra_header_col);
+            //hrow.appendChild(extra_header_col);
+            //$(hrow).prepend(extra_header_col);
+
+
+            $(extra_header_col).insertAfter('#header-row th:first-child');
+
 
             var markers = [];
 
@@ -360,7 +369,12 @@ $(document).ready(function () {
 
                 hidebtn.appendChild(input_icon);
                 extra_col.appendChild(hidebtn);
-                element.appendChild(extra_col);
+                //element.appendChild(extra_col);
+                //$(element).children('td')
+                //$(element).prepend(extra_col);
+
+                $(extra_col).insertAfter('#' + $(element).attr('id') + ' td:first-child');
+                //$(extra_header_col).insertAfter('#previewtable thead tr td:first-child');
 
             });//end each
 
@@ -380,10 +394,12 @@ $(document).ready(function () {
 
             //init plugin
             $('#previewtable').DataTable({
+                responsive: true,
+                "order": [[ 0, "asc" ]],
                 "columnDefs": [
-                    {"type": "alt-string", targets: 7},
-                    {"orderDataType": "dom-url", targets: 8},
-                    {"orderDataType": "dom-button", targets: data_headers.length}//in case not use sample.csv format
+                    {"type": "alt-string", targets: 8},
+                    {"orderDataType": "dom-url", targets: 9},
+                    {"orderDataType": "dom-button", targets: 1}
                 ]
             });
 
@@ -421,6 +437,7 @@ $(document).ready(function () {
                             $(element).addClass('btn-primary');
                             $(element).attr("title", "Click to hide from map");
                             $(element).parent().parent().removeClass("danger");
+
                         }
 
                     }

@@ -14,13 +14,17 @@
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.7/css/jquery.dataTables.css">
+    <!--<link rel="stylesheet" href="https://cdn.datatables.net/1.10.7/css/jquery.dataTables.css">-->
+    <link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/1.0.1/css/dataTables.responsive.css">
 
     <!-- Custom styles for this template -->
     <link href="css/style.css" rel="stylesheet">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+    <script src="http://cdn.datatables.net/responsive/1.0.6/js/dataTables.responsive.min.js"></script>
+    <script src="http://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
 
     <!--<script src="//maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>-->
     <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
@@ -129,7 +133,7 @@
                             </div>
                             <div id="marker_details">
                                 <label class="required" for="marker_details_choise">Point details: </label>
-                                <select id="marker_details_choise" size="4" multiple="multiple="></select>
+                                <select id="marker_details_choise" size="4" multiple="multiple"></select>
                             </div>
                             <p class="text-left"><span class="required"><small>Required fields</small></span></p>
                         </fieldset>

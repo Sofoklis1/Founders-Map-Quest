@@ -117,6 +117,7 @@ body > .container {
     text-align: center;
     /*min-width: 30px;*/
     vertical-align: middle;
+    border-bottom-width: 1px;
 }
 
 #previewtable td {
@@ -127,13 +128,17 @@ body > .container {
     /*word-wrap: break-word;*/
 }
 
-#previewtable, #previewtable tr, #previewtable td, #previewtable th {
-    border: 1px solid #ddd;
+#previewtable td.child {
+    text-align: left;
+}
+
+td.child .dtr-title {
+    font-size: 14px;
 }
 
 @media (max-width: 1023px) {
     #previewtable_wrapper {
-        overflow: auto;
+        /*overflow: auto;*/
         padding-bottom: 10px;
     }
 }
@@ -236,7 +241,7 @@ body > .container {
 }
 
 #previewtable_filter input {
-    height: 25px;
+    height: 32px;
     font-size: 14px;
     font-weight: normal;
     padding-left: 4px;
@@ -248,7 +253,7 @@ body > .container {
     }
 }
 
-#previewtable button:focus, #previewtable button:active {
+#previewtable button:focus, #previewtable button:active, .paginate_button a:focus {
     outline: none;
 }
 
