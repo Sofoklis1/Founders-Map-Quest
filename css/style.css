@@ -128,6 +128,12 @@ body > .container {
     /*word-wrap: break-word;*/
 }
 
+#previewtable.collapsed td:first-child {
+    padding: 8px 8px 8px 30px!important;
+    vertical-align: top;
+    line-height: 1.42857;
+}
+
 #previewtable td.child {
     text-align: left;
 }
@@ -158,10 +164,6 @@ td.child .dtr-title {
     #marker_settings div {
         width: 100%;
     }
-}
-
-#previewtable input[type="checkbox"] {
-    cursor: pointer;
 }
 
 .customthumbnail {

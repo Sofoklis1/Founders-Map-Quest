@@ -37,7 +37,7 @@ $(document).ready(function () {
         data_values = []; //clear data
         valid_lat_cols = [];
         valid_lon_cols = [];
-
+        
         var all_lines = $('textarea').val().split('\n');
 
         var preview = document.createDocumentFragment();
@@ -164,7 +164,7 @@ $(document).ready(function () {
 
         var tmpcount_error = 0;
 
-        //check if every line has equal number of columns to with header
+        //check if every line has equal number of columns to header
         $.each(data_values, function (i, column) {
 
             if (column.length != data_headers.length) {
@@ -186,8 +186,6 @@ $(document).ready(function () {
 
         /* We need at least 2 columns that contain valid coordinates, if not => wrong CSV */
         $.each(data_headers, function (i, column) {
-            //valid_lon_cols
-            //valid_lat_cols
 
             if (valid_lat_cols[column]) {
                 count_lat_col++;
@@ -230,7 +228,6 @@ $(document).ready(function () {
         var select_option_null = createElement("option", {"value": 0}, "-- select column --");
         $('#marker_lon_choise').append(select_option_null);
         $('#marker_lat_choise').append(select_option_null.cloneNode(true));
-        //$('#marker_details_choise').append(select_option_null.cloneNode(true));
         $('#marker_label_choise').append(select_option_null.cloneNode(true));
 
         var select_option_group = createElement( "optgroup", {"label": "Select fields"} );
@@ -261,9 +258,7 @@ $(document).ready(function () {
                 select_option.setAttribute("selected", "selected"); //make a deafult choise for label column 2 (company)
             }
 
-            //if (i == 6) { //marker details column
             detail_opt.setAttribute("selected", "selected"); //make a deafult choise for details column 7 (street)
-            //}
 
             $('#marker_details_choise').append(detail_opt);
             $('#marker_label_choise').append(select_option);
@@ -298,17 +293,9 @@ $(document).ready(function () {
 
             $('#table_data_area').html(table_area);
 
-            var hrow = document.querySelectorAll("#previewtable thead tr")[0]; //header row
-
-            //var extra_header_col = createElement("th", {"style": "padding: 10px;"}, "Marker");
             var extra_header_col = createElement("th", {"id": "short_markers"}, "Marker");
 
-            //hrow.appendChild(extra_header_col);
-            //$(hrow).prepend(extra_header_col);
-
-
             $(extra_header_col).insertAfter('#header-row th:first-child');
-
 
             var markers = [];
 
@@ -369,12 +356,8 @@ $(document).ready(function () {
 
                 hidebtn.appendChild(input_icon);
                 extra_col.appendChild(hidebtn);
-                //element.appendChild(extra_col);
-                //$(element).children('td')
-                //$(element).prepend(extra_col);
 
                 $(extra_col).insertAfter('#' + $(element).attr('id') + ' td:first-child');
-                //$(extra_header_col).insertAfter('#previewtable thead tr td:first-child');
 
             });//end each
 
