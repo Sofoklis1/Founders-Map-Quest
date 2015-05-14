@@ -6,8 +6,7 @@
 /************************* Settings **********************************/
 var delimiters = {"1": ",", "2": ";", "3": "\t"};
 var image_extensions = [".jpg", ".png", ".jpeg", ".gif", ".svg"]; //add more image extensions here
-var thumbnail_width = 50;
-//var thumbnail_height = 50;
+var thumbnail_width = 50;//height is auto
 var total_csv_columns = 11;
 /*********************************************************************/
 
@@ -37,7 +36,7 @@ $(document).ready(function () {
         data_values = []; //clear data
         valid_lat_cols = [];
         valid_lon_cols = [];
-        
+
         var all_lines = $('textarea').val().split('\n');
 
         var preview = document.createDocumentFragment();
